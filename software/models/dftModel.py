@@ -10,7 +10,7 @@ tol = 1e-14                                                 # threshold used to 
 def dftModel(x, w, N):
 	"""
 	Analysis/synthesis of a signal using the discrete Fourier transform
-	x: input signal, w: analysis window, N: FFT size
+	x: input signal, w: analysis window size, N: FFT size
 	returns y: output signal
 	"""
 

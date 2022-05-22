@@ -4,7 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import get_window
 import os, sys
+
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../models/'))
+
 import utilFunctions as UF
 import sineModel as SM
 

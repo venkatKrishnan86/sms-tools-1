@@ -18,9 +18,8 @@ except ImportError:
 	print ("Exiting the code!!")
 	print ("-------------------------------------------------------------------------------")
 	print ("\n")
-	sys.exit(0)
-	
-winsound_imported = False	
+	sys.exit(0)	
+winsound_imported = False
 if sys.platform == "win32":
 	try:
 		import winsound
@@ -69,20 +68,21 @@ def wavplay(filename):
 	if (os.path.isfile(filename) == False):                  # raise error if wrong input file
 		print("Input file does not exist. Make sure you computed the analysis/synthesis")
 	else:
-		if sys.platform == "linux" or sys.platform == "linux2":
-		    # linux
-		    subprocess.call(["aplay", filename])
-
-		elif sys.platform == "darwin":
+		if sys.platform == "darwin":
 			# OS X
 			subprocess.call(["afplay", filename])
-		elif sys.platform == "win32":
-			if winsound_imported:
-				winsound.PlaySound(filename, winsound.SND_FILENAME)
-			else:
-				print("Cannot play sound, winsound could not be imported")
-		else:
-			print("Platform not recognized")
+
+		#elif sys.platform == "linux" or sys.platform == "linux2":
+		    # linux
+		#    subprocess.call(["aplay", filename])
+				
+		#elif sys.platform == "win32":
+		#	if winsound_imported:
+		#		winsound.PlaySound(filename, winsound.SND_FILENAME)
+		#	else:
+		#		print("Cannot play sound, winsound could not be imported")
+		#else:
+		#	print("Platform not recognized")
 
 def wavwrite(y, fs, filename):
 	"""
