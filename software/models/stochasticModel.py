@@ -43,7 +43,7 @@ def stochasticModelAnal(x, H, N, stocf):
 		else:                                                 # rest of frames
 			stocEnv = np.vstack((stocEnv, np.array([mY])))
 		pin += H                                              # advance sound pointer
-	return stocEnv
+	return stocEnv 											  # mX downsampled: samples per time point is stocf * size
 
 def stochasticModelSynth(stocEnv, H, N):
 	"""
