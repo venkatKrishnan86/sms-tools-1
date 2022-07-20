@@ -12,7 +12,7 @@ import sineModel as SM
 def f0Detection(x, fs, w, N, H, t, minf0, maxf0, f0et):
 	"""
 	Fundamental frequency detection of a sound using twm algorithm
-	x: input sound; fs: sampling rate; w: analysis window; 
+	x: input sound; fs: sampling rate; w: analysis window; H: hop size
 	N: FFT size; t: threshold in negative dB, 
 	minf0: minimum f0 frequency in Hz, maxf0: maximim f0 frequency in Hz, 
 	f0et: error threshold in the f0 detection (ex: 5),
@@ -27,23 +27,28 @@ def f0Detection(x, fs, w, N, H, t, minf0, maxf0, f0et):
 	if (H <= 0):                                               # raise error if hop size 0 or negative
 		raise ValueError("Hop size (H) smaller or equal to 0")
 		
-	hN = N//2                                                  # size of positive spectrum
+	# hN = N//2                                                  # size of positive spectrum
 	hM1 = int(math.floor((w.size+1)/2))                        # half analysis window size by rounding
 	hM2 = int(math.floor(w.size/2))                            # half analysis window size by floor
 	x = np.append(np.zeros(hM2),x)                             # add zeros at beginning to center first window at sample 0
 	x = np.append(x,np.zeros(hM1))                             # add zeros at the end to analyze last sample
 	pin = hM1                                                  # init sound pointer in middle of anal window          
 	pend = x.size - hM1                                        # last sample to start a frame
-	fftbuffer = np.zeros(N)                                    # initialize buffer for FFT
+	# fftbuffer = np.zeros(N)                                    # initialize buffer for FFT
 	w = w / sum(w)                                             # normalize analysis window
 	f0 = []                                                    # initialize f0 output
 	f0t = 0                                                    # initialize f0 track
 	f0stable = 0                                               # initialize f0 stable
+	energy = np.array([])
+	# count=0
 	while pin<pend:             
 		x1 = x[pin-hM1:pin+hM2]                                  # select frame
+		energy_pin = np.sum(x1**2)
+		energy = np.append(energy, energy_pin)
+
 		mX, pX = DFT.dftAnal(x1, w, N)                           # compute dft           
 		ploc = UF.peakDetection(mX, t)                           # detect peak locations   
-		iploc, ipmag, ipphase = UF.peakInterp(mX, pX, ploc)      # refine peak values
+		iploc, ipmag, _ = UF.peakInterp(mX, pX, ploc)      # refine peak values
 		ipfreq = fs * iploc/N                                    # convert locations to Hez
 		f0t = UF.f0Twm(ipfreq, ipmag, f0et, minf0, maxf0, f0stable)  # find f0
 		if ((f0stable==0)&(f0t>0)) \
@@ -51,9 +56,29 @@ def f0Detection(x, fs, w, N, H, t, minf0, maxf0, f0et):
 			f0stable = f0t                                         # consider a stable f0 if it is close to the previous one
 		else:
 			f0stable = 0
+		
+		# Changes begin here
+		# if(len(f0)!=0):
+		# 	if(f0[count-1]*1.975 < f0t and f0[count-1]*2.025 > f0t):
+		# 		f0 = np.append(f0, f0t/2.0)
+		# 	elif(f0[count-1]*0.475 < f0t and f0[count-1]*0.525 > f0t):
+		# 		loc = -1
+		# 		for i in f0[::-1]:
+		# 			if(i==0):
+		# 				break
+		# 			f0[loc] = f0[loc]/2.0
+		# 			loc-=1
+		# 		f0 = np.append(f0, f0t)
+		# 	else:
+		# 		f0 = np.append(f0, f0t) 
+		# else:
+		# 	f0 = np.append(f0, f0t)
+		# Changes end here 
+		                            
 		f0 = np.append(f0, f0t)                                  # add f0 to output array
 		pin += H                                                 # advance sound pointer
-	return f0
+		# count+=1
+	return f0, energy
 
 
 def harmonicDetection(pfreq, pmag, pphase, f0, nH, hfreqp, fs, harmDevSlope=0.01):
@@ -106,8 +131,8 @@ def harmonicModel(x, fs, w, N, t, nH, minf0, maxf0, f0et):
 	x = np.append(np.zeros(hM2),x)                          # add zeros at beginning to center first window at sample 0
 	x = np.append(x,np.zeros(hM1))                          # add zeros at the end to analyze last sample
 	Ns = 512                                                # FFT size for synthesis (even)
-	H = Ns/4                                                # Hop size used for analysis and synthesis
-	hNs = Ns/2      
+	H = Ns//4                                               # Hop size used for analysis and synthesis
+	hNs = Ns//2      
 	pin = max(hNs, hM1)                                     # init sound pointer in middle of anal window          
 	pend = x.size - max(hNs, hM1)                           # last sample to start a frame
 	fftbuffer = np.zeros(N)                                 # initialize buffer for FFT
