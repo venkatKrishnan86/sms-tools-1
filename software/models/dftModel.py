@@ -45,25 +45,25 @@ def dftModel(x, w, N):
 	y[hM2:] = fftbuffer[:hM1]
 	return y
 
-def dftAnal(x, w, N):
+def dftAnal(input, window, fft_size):
 	"""
 	Analysis of a signal using the discrete Fourier transform
-	x: input signal, w: analysis window, N: FFT size 
+	input: input signal, window: analysis window, fft_size: FFT size 
 	returns mX, pX: magnitude and phase spectrum
 	"""
 
-	if not(UF.isPower2(N)):                                 # raise error if N not a power of two
+	if not(UF.isPower2(fft_size)):                                 # raise error if N not a power of two
 		raise ValueError("FFT size (N) is not a power of 2")
 
-	if (w.size > N):                                        # raise error if window size bigger than fft size
+	if (window.size > fft_size):                                        # raise error if window size bigger than fft size
 		raise ValueError("Window size (M) is bigger than FFT size")
 
-	hN = (N//2)+1                                           # size of positive spectrum, it includes sample 0
-	hM1 = (w.size+1)//2                                     # half analysis window size by rounding
-	hM2 = w.size//2                                         # half analysis window size by floor
-	fftbuffer = np.zeros(N)                                 # initialize buffer for FFT
-	w = w / sum(w)                                          # normalize analysis window
-	xw = x*w                                                # window the input sound
+	hN = (fft_size//2)+1                                         # size of positive spectrum, it includes sample 0
+	hM1 = (window.size+1)//2                                     # half analysis window size by rounding
+	hM2 = window.size//2                                         # half analysis window size by floor
+	fftbuffer = np.zeros(fft_size)                                # initialize buffer for FFT
+	window = window / sum(window)                                          # normalize analysis window
+	xw = input*window                                               # window the input sound
 	fftbuffer[:hM1] = xw[hM2:]                              # zero-phase window in fftbuffer
 	fftbuffer[-hM2:] = xw[:hM2]        
 	X = fft(fftbuffer)                                      # compute FFT
