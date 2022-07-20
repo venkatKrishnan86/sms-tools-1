@@ -62,7 +62,7 @@ def stftAnal(x, w, N, H) :
 		xpX.append(np.array(pX))
 		pin += H                                    # advance sound pointer
 	xmX = np.array(xmX)                             # Convert to numpy array
-	xpX = np.array(xpX)
+	xpX = np.array(xpX)								# Shape of xmX and xpX will be (a,b) where - a = time frames, b = number of samples
 	return xmX, xpX
 
 def stftSynth(mY, pY, M, H) :
