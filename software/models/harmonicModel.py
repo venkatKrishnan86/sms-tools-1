@@ -4,18 +4,21 @@
 import numpy as np
 from scipy.signal import blackmanharris, triang
 from scipy.fftpack import ifft
+from scipy.ndimage import gaussian_filter1d
 import math
 import dftModel as DFT
 import utilFunctions as UF
 import sineModel as SM
 
-def f0Detection(x, fs, w, N, H, t, minf0, maxf0, f0et):
+def f0Detection(x, fs, w, N, H, t, minf0, maxf0, f0et, fill_time_limit = None, sigma = None):
 	"""
 	Fundamental frequency detection of a sound using twm algorithm
 	x: input sound; fs: sampling rate; w: analysis window; H: hop size
 	N: FFT size; t: threshold in negative dB, 
 	minf0: minimum f0 frequency in Hz, maxf0: maximim f0 frequency in Hz, 
 	f0et: error threshold in the f0 detection (ex: 5),
+	fill_time_limit: fill gaps below this limit in ms,
+	sigma: Gaussian smoothing parameter
 	returns f0: fundamental frequency
 	"""
 	if (minf0 < 0):                                            # raise exception if minf0 is smaller than 0
@@ -78,6 +81,28 @@ def f0Detection(x, fs, w, N, H, t, minf0, maxf0, f0et):
 		f0 = np.append(f0, f0t)                                  # add f0 to output array
 		pin += H                                                 # advance sound pointer
 		# count+=1
+	
+	#Gap Filling
+	if fill_time_limit:
+		count = 0
+		time = len(f0)/((len(x)/fs)*(1000/fill_time_limit)) 	 # Limit for filling gaps
+		value = 0
+		for i in range(len(f0)):
+			if(f0[i]==0):
+				count+=1
+			else:
+				if(count>=time):
+					count = 0
+				else:
+					f0[i-count:i] = np.ones(count)*value
+					count = 0
+					value = 0
+			if(i!=len(f0)-1 and f0[i+1]==0 and count==0):
+				value = f0[i]
+	
+	if sigma:
+		f0 = gaussian_filter1d(f0, sigma)						 # Gaussian smoothing
+
 	return f0, energy
 
 
