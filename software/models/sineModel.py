@@ -214,7 +214,7 @@ def sineModelSynth(tfreq, tmag, tphase, N, H, fs):
 		lastytfreq = tfreq[l,:]                               # save frequency for phase propagation
 		ytphase = ytphase % (2*np.pi)                         # make phase inside 2*pi
 		yw = np.real(fftshift(ifft(Y)))                       # compute inverse FFT
-		y[pout:pout+N] += sw*yw                               # overlap-add and apply a synthesis window
+		y[pout:pout+N] += sw[:len(y)-pout]*yw[:len(y)-pout]                              # overlap-add and apply a synthesis window
 		pout += H                                             # advance sound pointer
 	y = np.delete(y, range(hN))                             # delete half of first window
 	y = np.delete(y, range(y.size-hN, y.size))              # delete half of the last window 
